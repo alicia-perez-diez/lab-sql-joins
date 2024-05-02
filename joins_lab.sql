@@ -6,7 +6,7 @@ ON c.category_id = fc.category_id
 GROUP BY category_name;
 
 -- Retrieve the store ID, city, and country for each store.
-SELECT s.store_id AS store_ID, a.city_id AS city_ID, c.city as city_name, co.country as country_name
+SELECT s.store_id AS store_ID, c.city as city_name, co.country as country_name
 FROM sakila.store AS s
 JOIN sakila.address AS a
 ON s.address_id = a.address_id
@@ -56,11 +56,11 @@ ORDER BY times_rented DESC
 LIMIT 10;
 
 -- Determine if "Academy Dinosaur" can be rented from Store 1.
-SELECT f.film_id AS film_id, i.store_id AS available_in_store_id
+SELECT f.title AS title, i.store_id AS available_in_store_id
 FROM sakila.film AS f
 JOIN sakila.inventory AS i
 ON f.film_id = i.film_id
-WHERE f.title = "Academy Dinosaur";
+WHERE f.title = "Academy Dinosaur" AND i.store_id = 1;
 
 	-- Sí, puede ser alquilada, ya que hay 4 unidades en la tienda 1
     
@@ -68,16 +68,13 @@ WHERE f.title = "Academy Dinosaur";
 -- Include a column indicating whether each title is 'Available' or 'NOT available.'
 -- Note that there are 42 titles that are not in the inventory, and this information can be obtained using a CASE statement combined with IFNULL."
 
-SELECT f.title AS film_titles,
-	f.film_id AS film_id,
-	i.inventory_id AS inventory_id,
-	r.rental_id AS rental_id,
+SELECT f.title AS film_titles, COUNT(i.film_id) AS number_of_copies,
 	CASE
-		WHEN IFNULL(r.rental_id, 0) > 0 THEN 'Available'
-		ELSE 'NOT available'
+		WHEN ISNULL(i.film_id) THEN 'Not Available'
+		ELSE 'Available'
 	END AS availability
 FROM sakila.film AS f
-JOIN sakila.inventory AS i
+LEFT JOIN sakila.inventory AS i
 ON f.film_id = i.film_id
-JOIN sakila.rental AS r
-ON i.inventory_id = r.inventory_id;
+GROUP BY f.film_id
+ORDER BY f.film_id ASC;
